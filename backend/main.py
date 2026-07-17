@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import time
 import uuid
+import typing
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -150,7 +151,7 @@ app = FastAPI(
 )
 
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, typing.cast(typing.Any, _rate_limit_exceeded_handler))
 
 
 # ─────────────── Middleware ───────────────────────────────────────────────────

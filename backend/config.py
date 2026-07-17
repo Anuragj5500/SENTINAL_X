@@ -1,5 +1,6 @@
-from pydantic_settings import BaseSettings
-from typing import Optional
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional, Any
 import secrets
 
 
@@ -17,6 +18,18 @@ class Settings(BaseSettings):
     
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///./sentinelx.db"
+    
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def convert_database_url(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            # Render PostgreSQL URLs start with postgres:// or postgresql://
+            # SQLAlchemy asyncpg requires postgresql+asyncpg://
+            if v.startswith("postgres://"):
+                v = v.replace("postgres://", "postgresql+asyncpg://", 1)
+            elif v.startswith("postgresql://") and not v.startswith("postgresql+asyncpg://"):
+                v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
     
     # External APIs (demo mode if not set)
     VIRUSTOTAL_API_KEY: Optional[str] = None
@@ -63,9 +76,11 @@ class Settings(BaseSettings):
     RATE_LIMIT_DEFAULT: str = "100/minute"
     RATE_LIMIT_AUTH: str = "10/minute"
     
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
 
 
 settings = Settings()

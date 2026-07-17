@@ -161,7 +161,10 @@ async def threat_hunt(
     logs = logs_result.scalars().all()
     alerts = alerts_result.scalars().all()
     
-    log_count = (await db.execute(select(func.count(Log.id)).where(and_(*log_filters) if log_filters else True))).scalar()
+    count_query = select(func.count(Log.id))
+    if log_filters:
+        count_query = count_query.where(and_(*log_filters))
+    log_count = (await db.execute(count_query)).scalar()
     
     return {
         "logs": [
