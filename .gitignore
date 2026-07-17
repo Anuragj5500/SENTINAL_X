@@ -1,0 +1,32 @@
+# Environment Variables (Secrets)
+.env
+.env.local
+.env.*.local
+
+# Python
+.venv/
+venv/
+ENV/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.pytype/
+
+# Databases
+*.db
+*.sqlite3
+sentinelx.db
+test_sentinelx.db
+
+# Frontend Dependencies & Builds
+node_modules/
+dist/
+build/
+.eslintcache
+
+# OS Files
+.DS_Store
+Thumbs.db

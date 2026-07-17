@@ -1,0 +1,298 @@
+[
+  {
+    "id": "rule-001",
+    "name": "Brute Force Login Detected",
+    "description": "More than 5 failed authentication attempts from the same IP within 2 minutes",
+    "rule_type": "threshold",
+    "severity": "high",
+    "enabled": true,
+    "logic": {
+      "event_type": "authentication_failure",
+      "threshold": 5,
+      "window_seconds": 120,
+      "group_by": "source_ip"
+    },
+    "mitre_technique": "T1110",
+    "mitre_tactic": "Credential Access",
+    "tags": ["brute-force", "authentication"]
+  },
+  {
+    "id": "rule-002",
+    "name": "Suspicious PowerShell Encoded Command",
+    "description": "PowerShell executed with -EncodedCommand or -enc flag",
+    "rule_type": "signature",
+    "severity": "critical",
+    "enabled": true,
+    "logic": {
+      "field": "command",
+      "contains_any": ["-EncodedCommand", "-enc ", "-e ", "FromBase64String"]
+    },
+    "mitre_technique": "T1059.001",
+    "mitre_tactic": "Execution",
+    "tags": ["powershell", "obfuscation", "malware"]
+  },
+  {
+    "id": "rule-003",
+    "name": "Scheduled Task Creation",
+    "description": "New scheduled task created — potential persistence mechanism",
+    "rule_type": "signature",
+    "severity": "high",
+    "enabled": true,
+    "logic": {
+      "event_id_any": ["4698", "4702"],
+      "or_command_contains": ["schtasks", "at.exe"]
+    },
+    "mitre_technique": "T1053.005",
+    "mitre_tactic": "Persistence",
+    "tags": ["persistence", "scheduled-task"]
+  },
+  {
+    "id": "rule-004",
+    "name": "LSASS Memory Access (Credential Dumping)",
+    "description": "Suspicious access to LSASS process — Mimikatz or similar tool",
+    "rule_type": "signature",
+    "severity": "critical",
+    "enabled": true,
+    "logic": {
+      "process_name_any": ["mimikatz.exe", "lsass.exe"],
+      "or_command_contains": ["sekurlsa", "logonpasswords", "lsadump"]
+    },
+    "mitre_technique": "T1003.001",
+    "mitre_tactic": "Credential Access",
+    "tags": ["credential-dumping", "mimikatz"]
+  },
+  {
+    "id": "rule-005",
+    "name": "PsExec Lateral Movement",
+    "description": "PsExec or similar tool used for lateral movement",
+    "rule_type": "signature",
+    "severity": "critical",
+    "enabled": true,
+    "logic": {
+      "process_name_any": ["psexec.exe", "psexesvc.exe"],
+      "or_command_contains": ["psexec", "\\\\admin$"]
+    },
+    "mitre_technique": "T1021.002",
+    "mitre_tactic": "Lateral Movement",
+    "tags": ["lateral-movement", "psexec"]
+  },
+  {
+    "id": "rule-006",
+    "name": "New Local Admin Account Created",
+    "description": "New user account added to local administrators group",
+    "rule_type": "signature",
+    "severity": "high",
+    "enabled": true,
+    "logic": {
+      "event_id_any": ["4720", "4732", "4728"]
+    },
+    "mitre_technique": "T1136.001",
+    "mitre_tactic": "Persistence",
+    "tags": ["account-creation", "privilege-escalation"]
+  },
+  {
+    "id": "rule-007",
+    "name": "Ransomware File Extension Pattern",
+    "description": "Mass file renaming with suspicious extensions",
+    "rule_type": "signature",
+    "severity": "critical",
+    "enabled": true,
+    "logic": {
+      "file_path_contains_any": [".encrypted", ".locked", ".crypto", ".crypted", ".ransom"]
+    },
+    "mitre_technique": "T1486",
+    "mitre_tactic": "Impact",
+    "tags": ["ransomware", "encryption"]
+  },
+  {
+    "id": "rule-008",
+    "name": "Suspicious Network Scanning",
+    "description": "Port scan or network enumeration activity detected",
+    "rule_type": "signature",
+    "severity": "medium",
+    "enabled": true,
+    "logic": {
+      "process_name_any": ["nmap", "masscan", "zmap"],
+      "or_command_contains": ["nmap", "--scan", "-sS", "-sV", "-p-"]
+    },
+    "mitre_technique": "T1046",
+    "mitre_tactic": "Discovery",
+    "tags": ["discovery", "network-scan"]
+  },
+  {
+    "id": "rule-009",
+    "name": "Service Installation",
+    "description": "New Windows service installed — check for persistence",
+    "rule_type": "signature",
+    "severity": "medium",
+    "enabled": true,
+    "logic": {
+      "event_id_any": ["4697", "7045"]
+    },
+    "mitre_technique": "T1543.003",
+    "mitre_tactic": "Persistence",
+    "tags": ["persistence", "service"]
+  },
+  {
+    "id": "rule-010",
+    "name": "Data Exfiltration via DNS",
+    "description": "Unusually large DNS queries indicating DNS tunneling",
+    "rule_type": "signature",
+    "severity": "high",
+    "enabled": true,
+    "logic": {
+      "event_type": "dns_query",
+      "query_length_gt": 100
+    },
+    "mitre_technique": "T1048.003",
+    "mitre_tactic": "Exfiltration",
+    "tags": ["exfiltration", "dns-tunneling"]
+  },
+  {
+    "id": "rule-011",
+    "name": "Privilege Escalation via Token Impersonation",
+    "description": "Token manipulation detected — potential UAC bypass",
+    "rule_type": "signature",
+    "severity": "critical",
+    "enabled": true,
+    "logic": {
+      "command_contains_any": ["SeDebugPrivilege", "ImpersonatePrivilege", "runas /trustlevel"]
+    },
+    "mitre_technique": "T1134",
+    "mitre_tactic": "Privilege Escalation",
+    "tags": ["privilege-escalation", "token-impersonation"]
+  },
+  {
+    "id": "rule-012",
+    "name": "Suspicious Cron Job Added (Linux)",
+    "description": "New cron job added — check for persistence",
+    "rule_type": "signature",
+    "severity": "medium",
+    "enabled": true,
+    "logic": {
+      "file_path_contains_any": ["/etc/cron", "/var/spool/cron", "crontab -e"]
+    },
+    "mitre_technique": "T1053.003",
+    "mitre_tactic": "Persistence",
+    "tags": ["linux", "persistence", "cron"]
+  },
+  {
+    "id": "rule-013",
+    "name": "WMI Persistence / Subscription",
+    "description": "WMI event subscription used for persistence",
+    "rule_type": "signature",
+    "severity": "high",
+    "enabled": true,
+    "logic": {
+      "process_name_any": ["wmic.exe", "wmiprvse.exe"],
+      "or_command_contains": ["subscription", "EventFilter", "__EventConsumer", "wmic /namespace"]
+    },
+    "mitre_technique": "T1546.003",
+    "mitre_tactic": "Persistence",
+    "tags": ["wmi", "persistence", "windows"]
+  },
+  {
+    "id": "rule-014",
+    "name": "Suspicious Base64 Execution (Certutil)",
+    "description": "Certutil used to decode and execute payloads — common LOLBin abuse",
+    "rule_type": "signature",
+    "severity": "high",
+    "enabled": true,
+    "logic": {
+      "process_name_any": ["certutil.exe"],
+      "or_command_contains": ["-decode", "-urlcache", "-f http", "-split"]
+    },
+    "mitre_technique": "T1140",
+    "mitre_tactic": "Defense Evasion",
+    "tags": ["lolbin", "certutil", "defense-evasion"]
+  },
+  {
+    "id": "rule-015",
+    "name": "Pass-the-Hash / Overpass-the-Hash",
+    "description": "NT hash or Kerberos ticket manipulation indicating lateral movement",
+    "rule_type": "signature",
+    "severity": "critical",
+    "enabled": true,
+    "logic": {
+      "command_contains_any": ["sekurlsa::pth", "overpass-the-hash", "/ntlm:", "/rc4:", "NtlmHash"]
+    },
+    "mitre_technique": "T1550.002",
+    "mitre_tactic": "Lateral Movement",
+    "tags": ["pass-the-hash", "credential-access", "lateral-movement"]
+  },
+  {
+    "id": "rule-016",
+    "name": "Shadow Copy Deletion (Ransomware Indicator)",
+    "description": "Volume shadow copies deleted — critical ransomware pre-encryption step",
+    "rule_type": "signature",
+    "severity": "critical",
+    "enabled": true,
+    "logic": {
+      "command_contains_any": ["vssadmin delete shadows", "wmic shadowcopy delete", "bcdedit /set recoveryenabled No", "wbadmin delete catalog"]
+    },
+    "mitre_technique": "T1490",
+    "mitre_tactic": "Impact",
+    "tags": ["ransomware", "shadow-copy", "impact"]
+  },
+  {
+    "id": "rule-017",
+    "name": "SSH Brute Force (Linux)",
+    "description": "More than 10 failed SSH authentication attempts from one source",
+    "rule_type": "threshold",
+    "severity": "high",
+    "enabled": true,
+    "logic": {
+      "event_type": "authentication_failure",
+      "threshold": 10,
+      "window_seconds": 120,
+      "group_by": "source_ip"
+    },
+    "mitre_technique": "T1110.001",
+    "mitre_tactic": "Credential Access",
+    "tags": ["ssh", "brute-force", "linux"]
+  },
+  {
+    "id": "rule-018",
+    "name": "AMSI / Antivirus Bypass Attempt",
+    "description": "Attempt to disable or bypass Windows AMSI or AV protection",
+    "rule_type": "signature",
+    "severity": "critical",
+    "enabled": true,
+    "logic": {
+      "command_contains_any": ["AmsiInitFailed", "amsiContext", "Set-MpPreference -DisableRealtimeMonitoring", "Add-MpPreference -ExclusionPath", "DisableAntiSpyware"]
+    },
+    "mitre_technique": "T1562.001",
+    "mitre_tactic": "Defense Evasion",
+    "tags": ["amsi-bypass", "defense-evasion", "powershell"]
+  },
+  {
+    "id": "rule-019",
+    "name": "Data Staging for Exfiltration",
+    "description": "Suspicious use of archiving tools to stage data for exfiltration",
+    "rule_type": "signature",
+    "severity": "high",
+    "enabled": true,
+    "logic": {
+      "process_name_any": ["7z.exe", "rar.exe", "winzip.exe", "tar"],
+      "or_command_contains": ["7z a ", "rar a ", "tar czf", "-mx9"]
+    },
+    "mitre_technique": "T1074.001",
+    "mitre_tactic": "Collection",
+    "tags": ["data-staging", "collection", "exfiltration"]
+  },
+  {
+    "id": "rule-020",
+    "name": "Malicious Office Macro Execution",
+    "description": "Office application spawning unexpected child processes — macro execution indicator",
+    "rule_type": "signature",
+    "severity": "high",
+    "enabled": true,
+    "logic": {
+      "process_name_any": ["cmd.exe", "powershell.exe", "wscript.exe", "cscript.exe"],
+      "or_command_contains": ["winword", "excel", "outlook", "mshta.exe", ".hta"]
+    },
+    "mitre_technique": "T1566.001",
+    "mitre_tactic": "Initial Access",
+    "tags": ["phishing", "macro", "office", "initial-access"]
+  }
+]

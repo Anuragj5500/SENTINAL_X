@@ -1,0 +1,71 @@
+from pydantic_settings import BaseSettings
+from typing import Optional
+import secrets
+
+
+class Settings(BaseSettings):
+    # App
+    APP_NAME: str = "SentinelX"
+    APP_VERSION: str = "1.0.0"
+    DEBUG: bool = True
+    
+    # Security
+    SECRET_KEY: str = secrets.token_urlsafe(32)
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    
+    # Database
+    DATABASE_URL: str = "sqlite+aiosqlite:///./sentinelx.db"
+    
+    # External APIs (demo mode if not set)
+    VIRUSTOTAL_API_KEY: Optional[str] = None
+    ABUSEIPDB_API_KEY: Optional[str] = None
+    OTX_API_KEY: Optional[str] = None
+    GEMINI_API_KEY: Optional[str] = None
+    OPENAI_API_KEY: Optional[str] = None
+    
+    # Email
+    SMTP_HOST: Optional[str] = None
+    SMTP_PORT: int = 587
+    SMTP_USER: Optional[str] = None
+    SMTP_PASS: Optional[str] = None
+    
+    # Slack
+    SLACK_WEBHOOK_URL: Optional[str] = None
+    
+    # Telegram
+    TELEGRAM_BOT_TOKEN: Optional[str] = None
+    TELEGRAM_CHAT_ID: Optional[str] = None
+    
+    # Discord
+    DISCORD_WEBHOOK_URL: Optional[str] = None
+    
+    # Microsoft Teams
+    TEAMS_WEBHOOK_URL: Optional[str] = None
+    
+    # Shodan
+    SHODAN_API_KEY: Optional[str] = None
+    
+    # CORS
+    CORS_ORIGINS: list = ["http://localhost:5173", "http://localhost:3000", "http://localhost:8080"]
+    
+    # Pagination
+    DEFAULT_PAGE_SIZE: int = 50
+    MAX_PAGE_SIZE: int = 500
+    
+    # Detection
+    MAX_EVENTS_PER_SECOND: int = 10000
+    ALERT_RETENTION_DAYS: int = 90
+    LOG_RETENTION_DAYS: int = 365
+    
+    # Rate Limiting
+    RATE_LIMIT_DEFAULT: str = "100/minute"
+    RATE_LIMIT_AUTH: str = "10/minute"
+    
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+
+
+settings = Settings()

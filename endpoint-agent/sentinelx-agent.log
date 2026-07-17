@@ -1,0 +1,10 @@
+2026-07-17 10:47:18,824 [INFO]    API: http://localhost:8000/api/v1
+2026-07-17 10:47:18,824 [INFO]    Poll interval: 30s | Batch size: 50
+2026-07-17 11:40:46,655 [INFO] Agent stopped by user
+2026-07-17 11:41:11,714 [INFO]    API: http://localhost:8000/api/v1
+2026-07-17 11:41:11,715 [INFO]    Poll interval: 30s | Batch size: 50
+2026-07-17 11:49:02,308 [INFO] Agent stopped by user
+2026-07-17 11:49:07,269 [INFO] [+] SentinelX Windows Agent starting on UPENDRA (192.168.1.58)
+2026-07-17 11:49:07,269 [INFO]    API: http://localhost:8000/api/v1
+2026-07-17 11:49:07,269 [INFO]    Poll interval: 30s | Batch size: 50
+2026-07-17 12:55:14,941 [INFO] Agent stopped by user
