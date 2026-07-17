@@ -16,7 +16,7 @@ async def get_stats(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    now = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
 
     # Counts
@@ -69,17 +69,24 @@ async def get_stats(
 
     # Hourly alert distribution (last 24h)
     alerts_by_hour = []
+    one_day_ago = now - timedelta(hours=24)
+    alerts_res = await db.execute(
+        select(Alert.created_at).where(Alert.created_at >= one_day_ago)
+    )
+    alerts_created_ats = alerts_res.scalars().all()
+    
+    hour_counts = {}
+    for dt in alerts_created_ats:
+        if dt:
+            hour_str = dt.strftime("%H:00")
+            hour_counts[hour_str] = hour_counts.get(hour_str, 0) + 1
+            
     for i in range(23, -1, -1):
-        hour_start = now - timedelta(hours=i+1)
-        hour_end = now - timedelta(hours=i)
-        count = (await db.execute(
-            select(func.count(Alert.id)).where(
-                and_(Alert.created_at >= hour_start, Alert.created_at < hour_end)
-            )
-        )).scalar()
+        hour_start = now - timedelta(hours=i)
+        hour_str = hour_start.strftime("%H:00")
         alerts_by_hour.append({
-            "hour": hour_start.strftime("%H:00"),
-            "count": count
+            "hour": hour_str,
+            "count": hour_counts.get(hour_str, 0)
         })
 
     # MITRE heatmap
@@ -117,7 +124,7 @@ async def get_attack_timeline(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    now = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     start = now - timedelta(days=days)
     
     rows = (await db.execute(

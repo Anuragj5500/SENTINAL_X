@@ -47,6 +47,7 @@ async def ingest_log(data: LogIngest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/ingest/bulk", status_code=202)
+@router.post("/batch", status_code=202)
 async def ingest_bulk(logs: list[LogIngest], db: AsyncSession = Depends(get_db)):
     """Bulk ingestion for agent batches."""
     ids = []
