@@ -26,3 +26,4 @@ croniter>=2.0.5
 aiosqlite>=0.20.0
 greenlet>=3.0.3
 types-python-jose
+gunicorn>=23.0.0
