@@ -15,6 +15,7 @@ python-dotenv>=1.0.1
 Faker>=24.11.0
 rich>=13.7.1
 apscheduler>=3.10.4
+asyncpg>=0.29.0
 slowapi>=0.1.9
 starlette>=0.37.2
 websockets>=12.0
