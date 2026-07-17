@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     SHODAN_API_KEY: Optional[str] = None
     
     # CORS
-        CORS_ORIGINS: list = ["http://localhost:5173", "http://localhost:3000", "http://localhost:8080","https://sentinelx-frontend-yx15.onrender.com", ]
+        CORS_ORIGINS: list = ["http://localhost:5173", "http://localhost:3000", "http://localhost:8080","https://sentinelx-frontend-yx15.onrender.com"]
 
     
     # Pagination
