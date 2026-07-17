@@ -3,7 +3,7 @@ Machine Learning Anomaly Detection using Isolation Forest and One-Class SVM.
 Detects: unusual login times, impossible travel, abnormal network traffic, rare executables.
 """
 import numpy as np
-from typing import List, Optional
+from typing import List, Optional, Any
 from datetime import datetime
 
 try:
@@ -15,8 +15,8 @@ except ImportError:
     ML_AVAILABLE = False
 
 # In-memory models (in production, save/load from disk)
-_isolation_forest: Optional[object] = None
-_scaler: Optional[object] = None
+_isolation_forest: Any = None
+_scaler: Any = None
 _trained = False
 
 

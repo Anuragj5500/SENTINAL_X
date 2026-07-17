@@ -103,7 +103,7 @@ async def list_audit_logs(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_roles(UserRole.super_admin, UserRole.soc_manager, UserRole.auditor))
 ):
-    total = (await db.execute(select(func.count(AuditLog.id)))).scalar()
+    total = int((await db.execute(select(func.count(AuditLog.id)))).scalar() or 0)
     offset = (page - 1) * page_size
     result = await db.execute(
         select(AuditLog).order_by(AuditLog.created_at.desc()).offset(offset).limit(page_size)

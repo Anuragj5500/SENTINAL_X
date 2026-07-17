@@ -139,13 +139,13 @@ async def execute_playbook(
             results.append({"action": action_type, "error": "Unknown action", "success": False})
             all_success = False
     
-    execution.results = results
-    execution.status = PlaybookStatus.completed if all_success else PlaybookStatus.failed
-    execution.completed_at = datetime.now(timezone.utc)
+    execution.results = results  # type: ignore
+    execution.status = PlaybookStatus.completed if all_success else PlaybookStatus.failed  # type: ignore
+    execution.completed_at = datetime.now(timezone.utc)  # type: ignore
     
     # Update playbook stats
-    playbook.run_count = (playbook.run_count or 0) + 1
-    playbook.last_run = datetime.now(timezone.utc)
+    playbook.run_count = (playbook.run_count or 0) + 1  # type: ignore
+    playbook.last_run = datetime.now(timezone.utc)  # type: ignore
     
     await db.flush()
     return execution

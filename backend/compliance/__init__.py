@@ -155,7 +155,7 @@ GDPR_CONTROLS = [
     {"id": "GDPR-Art.37", "category": "Data Protection Officer", "description": "DPO designation", "check": "security_policies", "weight": 7},
 ]
 
-FRAMEWORKS = {
+FRAMEWORKS: Dict[str, Dict[str, Any]] = {
     "pci_dss": {"name": "PCI DSS v4.0", "controls": PCI_DSS_CONTROLS},
     "soc2": {"name": "SOC 2 Type II", "controls": SOC2_CONTROLS},
     "iso27001": {"name": "ISO 27001:2022", "controls": ISO27001_CONTROLS},

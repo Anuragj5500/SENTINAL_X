@@ -40,7 +40,7 @@ async def run_playbook(
         playbook=playbook,
         db=db,
         alert=alert,
-        executed_by=current_user.id
+        executed_by=str(current_user.id)
     )
     
     return {

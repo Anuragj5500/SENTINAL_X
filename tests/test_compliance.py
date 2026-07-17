@@ -33,7 +33,7 @@ class TestFrameworkDefinitions:
 
         for fw_id, fw in FRAMEWORKS.items():
             for control in fw["controls"]:
-                weight = control["weight"]
+                weight = int(control["weight"])
                 assert 1 <= weight <= 10, f"Weight {weight} out of range in {fw_id}"
 
 
