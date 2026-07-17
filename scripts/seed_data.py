@@ -21,6 +21,9 @@ from backend.models import (
 fake = Faker()
 random.seed(42)
 
+def utcnow():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
 # ─────────────────────────────────────────────────────────────────────────────
 
 HOSTNAMES = [
@@ -84,7 +87,7 @@ async def seed_assets(db) -> list:
             tags=random.sample(["server", "workstation", "critical", "internet-facing", "database", "web"], k=2),
             antivirus_status=random.choice(["active", "active", "active", "outdated", "missing"]),
             agent_installed=random.choice([True, True, False]),
-            last_seen=datetime.now(timezone.utc) - timedelta(minutes=random.randint(0, 60)),
+            last_seen=utcnow() - timedelta(minutes=random.randint(0, 60)),
             risk_score=round(random.uniform(0, 100), 1)
         )
         db.add(asset)
@@ -103,8 +106,8 @@ async def seed_threat_intel(db):
             threat_type=threat_type,
             confidence=confidence,
             source="demo_seed",
-            first_seen=datetime.now(timezone.utc) - timedelta(days=random.randint(1, 90)),
-            last_seen=datetime.now(timezone.utc) - timedelta(hours=random.randint(0, 48))
+            first_seen=utcnow() - timedelta(days=random.randint(1, 90)),
+            last_seen=utcnow() - timedelta(hours=random.randint(0, 48))
         )
         db.add(feed)
     await db.flush()
@@ -118,7 +121,7 @@ async def seed_logs_and_alerts(db, assets: list, num_logs: int = 500, num_alerts
     for _ in range(num_logs):
         host = random.choice(assets)
         src_ip = random.choice([fake.ipv4_private(), fake.ipv4_public(), random.choice(SUSPICIOUS_IPS)])
-        ts = datetime.now(timezone.utc) - timedelta(
+        ts = utcnow() - timedelta(
             days=random.randint(0, 30),
             hours=random.randint(0, 23),
             minutes=random.randint(0, 59)
@@ -163,7 +166,7 @@ async def seed_logs_and_alerts(db, assets: list, num_logs: int = 500, num_alerts
         scenario = random.choice(MITRE_ATTACK_SCENARIOS)
         title, severity, technique, tactic, event_type = scenario
         
-        ts = datetime.now(timezone.utc) - timedelta(
+        ts = utcnow() - timedelta(
             days=random.randint(0, 30),
             hours=random.randint(0, 23),
         )
@@ -230,7 +233,7 @@ async def seed_incidents(db, num: int = 20):
         template = incident_templates[i % len(incident_templates)]
         title, severity, status = template
         
-        ts = datetime.now(timezone.utc) - timedelta(days=random.randint(0, 30))
+        ts = utcnow() - timedelta(days=random.randint(0, 30))
         
         incident = Incident(
             title=title,

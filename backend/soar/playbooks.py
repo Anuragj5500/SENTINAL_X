@@ -141,11 +141,11 @@ async def execute_playbook(
     
     execution.results = results  # type: ignore
     execution.status = PlaybookStatus.completed if all_success else PlaybookStatus.failed  # type: ignore
-    execution.completed_at = datetime.now(timezone.utc)  # type: ignore
+    execution.completed_at = datetime.now(timezone.utc).replace(tzinfo=None)  # type: ignore
     
     # Update playbook stats
     playbook.run_count = (playbook.run_count or 0) + 1  # type: ignore
-    playbook.last_run = datetime.now(timezone.utc)  # type: ignore
+    playbook.last_run = datetime.now(timezone.utc).replace(tzinfo=None)  # type: ignore
     
     await db.flush()
     return execution

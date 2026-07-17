@@ -1,4 +1,5 @@
 from datetime import datetime, timezone, timedelta
+from typing import cast
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -12,7 +13,7 @@ from backend.auth.rbac import get_current_user
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-async def log_audit(db: AsyncSession, user_id: str, action: str, details: dict, ip: str = None):
+async def log_audit(db: AsyncSession, user_id: str, action: str, details: dict, ip: str | None = None):
     log = AuditLog(user_id=user_id, action=action, resource_type="auth", details=details, ip_address=ip)
     db.add(log)
 
@@ -35,7 +36,7 @@ async def register(data: UserCreate, db: AsyncSession = Depends(get_db)):
     )
     db.add(user)
     await db.flush()
-    await log_audit(db, user.id, "USER_REGISTERED", {"username": user.username})
+    await log_audit(db, cast(str, user.id), "USER_REGISTERED", {"username": user.username})
     return user
 
 
@@ -48,14 +49,15 @@ async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(ge
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     # Check lockout
-    if user.locked_until and user.locked_until > datetime.now(timezone.utc):
-        remaining = (user.locked_until - datetime.now(timezone.utc)).seconds
+    current_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+    if user.locked_until and user.locked_until > current_utc:
+        remaining = (user.locked_until - current_utc).seconds
         raise HTTPException(status_code=423, detail=f"Account locked. Try again in {remaining}s")
     
-    if not verify_password(data.password, user.hashed_password):
+    if not verify_password(data.password, cast(str, user.hashed_password)):
         user.failed_login_attempts += 1
         if user.failed_login_attempts >= 5:
-            user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)
+            user.locked_until = current_utc + timedelta(minutes=15)  # type: ignore
         await db.flush()
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
@@ -63,17 +65,17 @@ async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(ge
     if user.is_mfa_enabled and user.mfa_secret:
         if not data.totp_code:
             raise HTTPException(status_code=428, detail="MFA code required")
-        if not verify_totp(user.mfa_secret, data.totp_code):
+        if not verify_totp(cast(str, user.mfa_secret), data.totp_code):
             raise HTTPException(status_code=401, detail="Invalid MFA code")
     
     # Success
     user.failed_login_attempts = 0
     user.locked_until = None
-    user.last_login = datetime.now(timezone.utc)
+    user.last_login = current_utc  # type: ignore
     await db.flush()
     
     ip = request.client.host if request.client else "unknown"
-    await log_audit(db, user.id, "USER_LOGIN", {"ip": ip}, ip)
+    await log_audit(db, cast(str, user.id), "USER_LOGIN", {"ip": ip}, ip)
     
     token_data = {"sub": user.id, "role": user.role.value}
     return TokenResponse(
@@ -112,9 +114,9 @@ async def me(current_user: User = Depends(get_current_user)):
 @router.post("/mfa/setup", response_model=MFASetupResponse)
 async def setup_mfa(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     secret = generate_mfa_secret()
-    current_user.mfa_secret = secret
+    current_user.mfa_secret = secret  # type: ignore
     await db.flush()
-    uri = get_totp_uri(secret, current_user.username)
+    uri = get_totp_uri(secret, cast(str, current_user.username))
     return MFASetupResponse(secret=secret, qr_uri=uri)
 
 
@@ -122,18 +124,18 @@ async def setup_mfa(current_user: User = Depends(get_current_user), db: AsyncSes
 async def verify_mfa(data: MFAVerify, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     if not current_user.mfa_secret:
         raise HTTPException(status_code=400, detail="MFA not set up")
-    if not verify_totp(current_user.mfa_secret, data.totp_code):
+    if not verify_totp(cast(str, current_user.mfa_secret), data.totp_code):
         raise HTTPException(status_code=400, detail="Invalid TOTP code")
-    current_user.is_mfa_enabled = True
+    current_user.is_mfa_enabled = True  # type: ignore
     await db.flush()
     return {"message": "MFA enabled successfully"}
 
 
 @router.post("/change-password")
 async def change_password(data: PasswordChange, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    if not verify_password(data.current_password, current_user.hashed_password):
+    if not verify_password(data.current_password, cast(str, current_user.hashed_password)):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
-    current_user.hashed_password = hash_password(data.new_password)
+    current_user.hashed_password = hash_password(data.new_password)  # type: ignore
     await db.flush()
-    await log_audit(db, current_user.id, "PASSWORD_CHANGED", {})
+    await log_audit(db, cast(str, current_user.id), "PASSWORD_CHANGED", {})
     return {"message": "Password changed successfully"}

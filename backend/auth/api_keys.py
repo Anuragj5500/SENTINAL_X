@@ -48,11 +48,12 @@ async def validate_api_key(
         return None
 
     # Check expiry
-    if key_record.expires_at and key_record.expires_at < datetime.now(timezone.utc):
+    current_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+    if key_record.expires_at and key_record.expires_at < current_utc:
         return None
 
     # Update last used
-    key_record.last_used = datetime.now(timezone.utc)
+    key_record.last_used = current_utc
     await db.flush()
 
     # Load user

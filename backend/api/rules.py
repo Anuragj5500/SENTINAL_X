@@ -134,7 +134,7 @@ async def mitre_matrix(
     active_rules = rules_res.scalars().all()
     
     # 2. Get active alerts in the last 7 days
-    seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    seven_days_ago = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=7)
     alerts_res = await db.execute(
         select(Alert.mitre_technique, func.count(Alert.id))
         .where(Alert.created_at >= seven_days_ago)

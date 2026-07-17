@@ -102,9 +102,9 @@ async def update_incident(
         incident.timeline = timeline
         
         if updates["status"] == IncidentStatus.resolved.value:
-            incident.resolved_at = datetime.now(timezone.utc)
+            incident.resolved_at = datetime.now(timezone.utc).replace(tzinfo=None)
         elif updates["status"] == IncidentStatus.closed.value:
-            incident.closed_at = datetime.now(timezone.utc)
+            incident.closed_at = datetime.now(timezone.utc).replace(tzinfo=None)
     
     for field, value in updates.items():
         setattr(incident, field, value)

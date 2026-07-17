@@ -169,7 +169,7 @@ async def create_api_key(
     
     expires_at = None
     if req.expires_in_days:
-        expires_at = datetime.now(timezone.utc) + timedelta(days=req.expires_in_days)
+        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=req.expires_in_days)
         
     api_key_rec = ApiKey(
         name=req.name,

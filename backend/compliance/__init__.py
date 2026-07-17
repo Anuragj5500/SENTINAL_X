@@ -174,7 +174,7 @@ async def _check_authentication_controls(db: AsyncSession, days: int) -> Dict[st
     )).scalar() or 0
     mfa_rate = (mfa_users / total_users) * 100
 
-    since = datetime.now(timezone.utc) - timedelta(days=days)
+    since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
     failed_logins = (await db.execute(
         select(func.count(Log.id)).where(
             and_(Log.event_type == "authentication_failure", Log.created_at >= since)
@@ -216,7 +216,7 @@ async def _check_authentication_controls(db: AsyncSession, days: int) -> Dict[st
 
 async def _check_audit_logging(db: AsyncSession, days: int) -> Dict[str, Any]:
     """Check audit log coverage and completeness."""
-    since = datetime.now(timezone.utc) - timedelta(days=days)
+    since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
     total_audit = (await db.execute(
         select(func.count(AuditLog.id)).where(AuditLog.created_at >= since)
     )).scalar() or 0
@@ -339,7 +339,7 @@ async def _check_antivirus_status(db: AsyncSession, days: int) -> Dict[str, Any]
 
 async def _check_incident_response(db: AsyncSession, days: int) -> Dict[str, Any]:
     """Check incident response capabilities and metrics."""
-    since = datetime.now(timezone.utc) - timedelta(days=days)
+    since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
     total_incidents = (await db.execute(
         select(func.count(Incident.id)).where(Incident.created_at >= since)
     )).scalar() or 0
@@ -392,7 +392,7 @@ async def _check_asset_inventory(db: AsyncSession, days: int) -> Dict[str, Any]:
         select(func.count(Asset.id)).where(Asset.agent_installed == True)
     )).scalar() or 0
 
-    stale_cutoff = datetime.now(timezone.utc) - timedelta(days=7)
+    stale_cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=7)
     stale = (await db.execute(
         select(func.count(Asset.id)).where(
             or_(Asset.last_seen < stale_cutoff, Asset.last_seen.is_(None))
@@ -432,7 +432,7 @@ async def _check_asset_inventory(db: AsyncSession, days: int) -> Dict[str, Any]:
 
 async def _check_continuous_monitoring(db: AsyncSession, days: int) -> Dict[str, Any]:
     """Check that continuous monitoring is active."""
-    since = datetime.now(timezone.utc) - timedelta(days=days)
+    since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
     total_alerts = (await db.execute(
         select(func.count(Alert.id)).where(Alert.created_at >= since)
     )).scalar() or 0
@@ -444,7 +444,7 @@ async def _check_continuous_monitoring(db: AsyncSession, days: int) -> Dict[str,
 
     today_logs = (await db.execute(
         select(func.count(Log.id)).where(
-            Log.created_at >= datetime.now(timezone.utc).replace(hour=0, minute=0, second=0)
+            Log.created_at >= datetime.now(timezone.utc).replace(hour=0, minute=0, second=0).replace(tzinfo=None)
         )
     )).scalar() or 0
 

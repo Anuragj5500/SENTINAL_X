@@ -34,7 +34,7 @@ class ReportRequest(BaseModel):
 # ─────────────────────────────── Helpers ─────────────────────────────────────
 
 async def _collect_executive_data(db: AsyncSession, days: int) -> dict:
-    since = datetime.now(timezone.utc) - timedelta(days=days)
+    since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
 
     total_alerts = (await db.execute(select(func.count(Alert.id)).where(Alert.created_at >= since))).scalar()
     critical_alerts = (await db.execute(
@@ -75,7 +75,7 @@ async def _collect_executive_data(db: AsyncSession, days: int) -> dict:
 
 
 async def _collect_incident_data(db: AsyncSession, days: int) -> dict:
-    since = datetime.now(timezone.utc) - timedelta(days=days)
+    since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
     result = await db.execute(
         select(Incident).where(Incident.created_at >= since).order_by(Incident.created_at.desc())
     )
@@ -129,7 +129,7 @@ async def _collect_ioc_data(db: AsyncSession) -> dict:
 
 
 async def _collect_mitre_data(db: AsyncSession, days: int) -> dict:
-    since = datetime.now(timezone.utc) - timedelta(days=days)
+    since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
     rows = (await db.execute(
         select(
             Alert.mitre_tactic,
